@@ -1,0 +1,2 @@
+[properties]
+c_args=['-D__WINESRC__']

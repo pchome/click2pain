@@ -1,0 +1,2 @@
+[built-in options]
+c_args=['-D__WINESRC__']

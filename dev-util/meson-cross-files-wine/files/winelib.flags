@@ -1,0 +1,4 @@
+[built-in options]
+c_args = ['-fvisibility=hidden']
+cpp_args = ['--no-gnu-unique', '-DNOMINMAX', '-fvisibility=hidden', '-fvisibility-inlines-hidden', '-fpermissive']
+cpp_link_args = ['-mwindows']

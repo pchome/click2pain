@@ -1,0 +1,14 @@
+[binaries]
+c = ['winegcc', '-m64', '-fno-pie', '-no-pie']
+cpp = ['wineg++', '-m64', '-fno-pie', '-no-pie']
+ar = 'gcc-ar'
+strip = 'strip'
+
+[properties]
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
