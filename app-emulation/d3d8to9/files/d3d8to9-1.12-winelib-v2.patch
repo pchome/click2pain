@@ -1,0 +1,89 @@
+diff --git a/source/d3d8to9.cpp b/source/d3d8to9.cpp
+index 78ce2a4..708b33a 100644
+--- a/source/d3d8to9.cpp
++++ b/source/d3d8to9.cpp
+@@ -58,6 +58,7 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
+ #ifndef D3D8TO9NOLOG
+ 			LOG << "Failed to load d3dx9_43.dll! Some features will not work correctly." << std::endl;
+ #endif
++			#ifndef __WINE__
+ 			if (MessageBox(nullptr, TEXT(
+ 				"Failed to load d3dx9_43.dll! Some features will not work correctly.\n\n"
+ 				"It's required to install the \"Microsoft DirectX End-User Runtime\" in order to use d3d8to9.\n\n"
+@@ -67,6 +68,7 @@ extern "C" Direct3D8 *WINAPI Direct3DCreate8(UINT SDKVersion)
+ 
+ 				return nullptr;
+ 			}
++			#endif
+ 		}
+ 	}
+ 
+diff --git a/source/d3d8to9.hpp b/source/d3d8to9.hpp
+index 6dbf31e..f1a5c37 100644
+--- a/source/d3d8to9.hpp
++++ b/source/d3d8to9.hpp
+@@ -5,6 +5,32 @@
+ 
+ #pragma once
+ 
++// GCC complains about the COM interfaces
++// not having virtual destructors
++#ifdef __GNUC__
++#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
++#endif // __GNUC__
++
++// GCC: -std options disable certain keywords
++// https://gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html
++#if defined(__WINE__) && !defined(typeof)
++#define typeof __typeof
++#endif
++
++//for some reason we need to specify __declspec(dllexport) for MinGW
++#if defined(__WINE__)
++  template<typename T>
++  void **IID_PPV_ARGS_Helper (T **pp) { return reinterpret_cast<void **> (pp); }
++
++  #define IID_PPV_ARGS(ppType) __uuidof (**(ppType)), IID_PPV_ARGS_Helper (ppType)
++
++  #define DLLEXPORT __attribute__((visibility("default")))
++#elif defined(_MSC_VER)
++  #define DLLEXPORT
++#else
++  #define DLLEXPORT __declspec(dllexport)
++#endif
++
+ #include <vector>
+ #include "d3d8types.hpp"
+ 
+diff --git a/source/d3d8types.cpp b/source/d3d8types.cpp
+index b190243..d2e23d5 100644
+--- a/source/d3d8types.cpp
++++ b/source/d3d8types.cpp
+@@ -89,7 +89,11 @@ void ConvertCaps(D3DCAPS9 &Input, D3DCAPS8 &Output)
+ 	// Set default vertex shader version to 1.1 for D3D8 compatibility
+ 	Output.VertexShaderVersion = D3DVS_VERSION(1, 1);
+ 	// D3D8 can only handle up to 256 for MaxVertexShaderConst
++	#ifdef __WINE__
++	Output.MaxVertexShaderConst = std::min((DWORD)256, Input.MaxVertexShaderConst);
++	#else
+ 	Output.MaxVertexShaderConst = std::min(256ul, Input.MaxVertexShaderConst);
++	#endif
+ }
+ 
+ void ConvertVolumeDesc(D3DVOLUME_DESC &Input, D3DVOLUME_DESC8 &Output)
+diff --git a/source/d3dx9.hpp b/source/d3dx9.hpp
+index 2342265..585dc0a 100644
+--- a/source/d3dx9.hpp
++++ b/source/d3dx9.hpp
+@@ -1,5 +1,11 @@
+ #pragma once
+ 
++// GCC complains about the COM interfaces
++// not having virtual destructors
++#ifdef __GNUC__
++#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
++#endif // __GNUC__
++
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif

@@ -1,0 +1,15 @@
+diff --git a/source/d3d8to9_device.cpp b/source/d3d8to9_device.cpp
+index 718ea7f..4b6e167 100644
+--- a/source/d3d8to9_device.cpp
++++ b/source/d3d8to9_device.cpp
+@@ -1536,8 +1536,8 @@ HRESULT STDMETHODCALLTYPE Direct3DDevice8::CreateVertexShader(const DWORD *pDecl
+ 		if (SUCCEEDED(hr))
+ 		{
+ 			// Since 'Shader' is at least 8 byte aligned, we can safely shift it to right and end up not overwriting the top bit
+-			assert((reinterpret_cast<DWORD>(ShaderInfo) & 1) == 0);
+-			const DWORD ShaderMagic = reinterpret_cast<DWORD>(ShaderInfo) >> 1;
++			assert((reinterpret_cast<DWORD_PTR>(ShaderInfo) & 1) == 0);
++			const DWORD ShaderMagic = reinterpret_cast<DWORD_PTR>(ShaderInfo) >> 1;
+ 
+ 			*pHandle = ShaderMagic | 0x80000000;
+ 		}
