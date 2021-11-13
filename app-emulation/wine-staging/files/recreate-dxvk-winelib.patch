@@ -1,0 +1,85 @@
+--- a/dlls/winevulkan/winevulkan.spec
++++ b/dlls/winevulkan/winevulkan.spec
+@@ -11,6 +11,7 @@
+ @ stdcall -private vk_icdGetInstanceProcAddr(ptr str)
+ @ stdcall -private vk_icdGetPhysicalDeviceProcAddr(ptr str)
+ @ stdcall -private vk_icdNegotiateLoaderICDInterfaceVersion(ptr)
++@ cdecl -norelay native_vkGetInstanceProcAddrWINE(ptr str)
+ @ stdcall vkAcquireNextImage2KHR(ptr ptr ptr)
+ @ stdcall vkAcquireNextImageKHR(ptr int64 int64 int64 int64 ptr)
+ @ stdcall vkAllocateCommandBuffers(ptr ptr ptr)
+--- a/dlls/winevulkan/loader.c
++++ b/dlls/winevulkan/loader.c
+@@ -231,6 +231,19 @@ static BOOL  wine_vk_init_once(void)
+     return InitOnceExecuteOnce(&init_once, wine_vk_init, NULL, NULL);
+ }
+ 
++/*
++ * Wrapper around driver vkGetInstanceProcAddr implementation.
++ * Allows winelib applications to access Vulkan functions with Wine
++ * additions and native ABI.
++ */
++void *native_vkGetInstanceProcAddrWINE(VkInstance instance, const char *name)
++{
++    if(!wine_vk_init_once())
++        return NULL;
++
++    return unix_funcs->p_native_GetInstanceProcAddr(instance, name);
++}
++
+ VkResult WINAPI vkCreateInstance(const VkInstanceCreateInfo *create_info,
+         const VkAllocationCallbacks *allocator, VkInstance *instance)
+ {
+--- a/dlls/winevulkan/loader_thunks.h
++++ b/dlls/winevulkan/loader_thunks.h
+@@ -419,6 +419,8 @@ struct unix_funcs
+     /* winevulkan specific functions */
+     BOOL (WINAPI *p_is_available_instance_function)(VkInstance, const char *);
+     BOOL (WINAPI *p_is_available_device_function)(VkDevice, const char *);
++    /* Wrapper around driver vkGetInstanceProcAddr implementation. */
++    void * ( *p_native_GetInstanceProcAddr)(VkInstance, const char *);
+ };
+ 
+ #endif /* __WINE_VULKAN_LOADER_THUNKS_H */
+--- a/dlls/winevulkan/vulkan_thunks.c
++++ b/dlls/winevulkan/vulkan_thunks.c
+@@ -8719,4 +8719,5 @@ const struct unix_funcs loader_funcs =
+     &wine_vkWriteAccelerationStructuresPropertiesKHR,
+     &wine_vk_is_available_instance_function,
+     &wine_vk_is_available_device_function,
++    &wine_vk_native_GetInstanceProcAddr,
+ };
+--- a/dlls/winevulkan/vulkan.c
++++ b/dlls/winevulkan/vulkan.c
+@@ -432,6 +432,21 @@ NTSTATUS CDECL __wine_init_unix_lib(HMOD
+     return STATUS_SUCCESS;
+ }
+ 
++/*
++ * Wrapper around driver vkGetInstanceProcAddr implementation.
++ * Allows winelib applications to access Vulkan functions with Wine
++ * additions and native ABI.
++ */
++void *wine_vk_native_GetInstanceProcAddr(VkInstance instance, const char *name)
++{
++    TRACE("%p, %s\n", instance, debugstr_a(name));
++
++    if (!vk_funcs)
++        return NULL;
++
++    return vk_funcs->p_vkGetInstanceProcAddr(instance, name);
++}
++
+ /* Helper function for converting between win32 and host compatible VkInstanceCreateInfo.
+  * This function takes care of extensions handled at winevulkan layer, a Wine graphics
+  * driver is responsible for handling e.g. surface extensions.
+--- a/dlls/winevulkan/vulkan_private.h
++++ b/dlls/winevulkan/vulkan_private.h
+@@ -210,6 +210,7 @@ BOOL wine_vk_instance_extension_supporte
+ BOOL wine_vk_is_type_wrapped(VkObjectType type) DECLSPEC_HIDDEN;
+ uint64_t wine_vk_unwrap_handle(VkObjectType type, uint64_t handle) DECLSPEC_HIDDEN;
+ 
++extern void *wine_vk_native_GetInstanceProcAddr(VkInstance instance, const char *name) DECLSPEC_HIDDEN;
+ extern const struct unix_funcs loader_funcs;
+ 
+ #endif /* __WINE_VULKAN_PRIVATE_H */

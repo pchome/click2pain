@@ -10,6 +10,16 @@ Steam compat tool, Wine w/ Staging/Proton patches and ™.
 * broken Gentoo Mingw64 builds, focused on Windows native compilation (not cross-compilation),
   produses broken binaries which fails here and there and leeking memory
   (or it's just me not lucky enough to build Mingw64 on Gentoo)
+* I just need more time to adopt my environment for PE builds
+
+## WINEMODPATH
+Copy/paste of WINEDLLPATH but for higher priority.
+Which mean all `*.dll.so` files will be loaded first from path found in WINEMODPATH=/path/to,
+then in Wine, and then (if missed) in WINEDLLPATH=/path/to.
+
+This behaviour makes WINEMODPATH environment variable perfect for various winelib builds, e.g.
+`WINEMODPATH=/usr/lib64/dxvk:/usr/lib/dxvk wine some-d3d11.exe` should run DXVK d3d11, no copying,
+no registry, etc.
 
 ## MEBUILDs
 EBUILDs with `meson.build` mix.

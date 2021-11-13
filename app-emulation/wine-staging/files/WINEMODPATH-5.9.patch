@@ -1,0 +1,29 @@
+--- a/dlls/ntdll/unix/loader.c
++++ b/dlls/ntdll/unix/loader.c
+@@ -222,14 +222,23 @@
+ 
+ static void set_dll_path(void)
+ {
+-    char *p, *path = getenv( "WINEDLLPATH" );
+-    int i, count = 0;
++    char *p, *path = getenv( "WINEDLLPATH" ), *modpath = getenv( "WINEMODPATH" );
++    int i, count = 0, modcount = 0;
++
++    if (modpath) for (p = modpath, modcount = 1; *p; p++) if (*p == ':') modcount++;
+ 
+     if (path) for (p = path, count = 1; *p; p++) if (*p == ':') count++;
+ 
+-    dll_paths = malloc( (count + 2) * sizeof(*dll_paths) );
++    dll_paths = malloc( (count + modcount + 2) * sizeof(*dll_paths) );
+     count = 0;
+ 
++    if (modpath)
++    {
++        modpath = strdup(modpath);
++        for (p = strtok( modpath, ":" ); p; p = strtok( NULL, ":" )) dll_paths[count++] = strdup( p );
++        free( modpath );
++    }
++
+     if (!build_dir) dll_paths[count++] = dll_dir;
+ 
+     if (path)
