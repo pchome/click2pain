@@ -32,6 +32,9 @@ STAGING_P="wine-staging-${MY_PV}"
 STAGING_DIR="${WORKDIR}/${STAGING_P}"
 GWP_V="20210925"
 PATCHDIR="${WORKDIR}/gentoo-wine-patches"
+GE_COMMIT=d83b266ef51a4dd5d40207d744c15a9f74359e36
+GE_P="proton-ge-custom-${GE_COMMIT}"
+GE_DIR="${WORKDIR}/${GE_P}"
 
 DESCRIPTION="Free implementation of Windows(tm) on Unix, with Wine-Staging patchset"
 HOMEPAGE="https://www.winehq.org/"
@@ -45,6 +48,9 @@ else
 	SRC_URI="${SRC_URI}
 	staging? ( https://github.com/wine-staging/wine-staging/archive/v${MY_PV}.tar.gz -> ${STAGING_P}.tar.gz )"
 fi
+
+SRC_URI="${SRC_URI}
+	proton? ( https://github.com/GloriousEggroll/proton-ge-custom/archive/${GE_COMMIT}.zip -> ${GE_P}.zip )"
 
 LICENSE="LGPL-2.1"
 SLOT="${MY_PV}"
@@ -400,6 +406,34 @@ src_prepare() {
 		# 0169-HACK-steam-kernelbase-Substitute-the-current-pid-for.patch
 		# 0171-HACK-steam-ntdll-Append-C-Program-Files-x86-Steam-to.patch
 		# 0170-HACK-steam-wine.inf-Add-required-Steam-registry-entr.patch
+
+		# GE
+		eapply "${GE_DIR}/patches/proton/01-proton-use_clock_monotonic.patch"
+		eapply "${GE_DIR}/patches/proton/03-proton-fsync_staging.patch"
+		eapply "${GE_DIR}/patches/proton/57-fsync_futex_waitv.patch"
+		eapply "${GE_DIR}/patches/proton/04-proton-LAA_staging.patch"
+		eapply "${GE_DIR}/patches/proton/08-proton-steamclient_swap.patch"
+		# fix patch
+		ebegin "Fixing GE patch"
+		(
+			cd "${GE_DIR}/patches/proton"
+			eapply "${FILESDIR}/fix-10-proton-protonify_staging.patch"
+		)
+		eend $? || die "Failed to apply fix"
+		eapply "${GE_DIR}/patches/proton/10-proton-protonify_staging.patch"
+		#eapply "${GE_DIR}/patches/proton/11-proton-pa-staging.patch"
+		eapply "${GE_DIR}/patches/proton/12-proton-steam-bits.patch"
+		# ...
+		# fix patch
+		ebegin "Fixing GE patch"
+		(
+			cd "${GE_DIR}/patches/proton"
+			eapply "${FILESDIR}/fix-41-valve_proton_fullscreen_hack-staging-tkg.patch"
+		)
+		eend $? || die "Failed to apply fix"
+		eapply "${GE_DIR}/patches/proton/41-valve_proton_fullscreen_hack-staging-tkg.patch"
+		eapply "${GE_DIR}/patches/proton/48-proton-fshack_amd_fsr.patch"
+		# ...
 	fi
 
 	# Winelib specific patches

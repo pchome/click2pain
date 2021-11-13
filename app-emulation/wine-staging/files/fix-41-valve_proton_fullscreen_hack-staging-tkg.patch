@@ -1,0 +1,32 @@
+--- a/41-valve_proton_fullscreen_hack-staging-tkg.patch
++++ b/41-valve_proton_fullscreen_hack-staging-tkg.patch
+@@ -2233,9 +2233,9 @@ index 124bb41f7d9..5986b6cc4ff 100644
+ 
+  #include "winternl.h"
+ +#include "winuser.h"
+- #include "ntuser.h"
+  #include "ddk/d3dkmthk.h"
+  #include "wine/list.h"
++ 
+ @@ -289,4 +290,22 @@ extern void CDECL __wine_set_display_driver( HMODULE module );
+  extern struct opengl_funcs * CDECL __wine_get_wgl_driver( HDC hdc, UINT version );
+  extern const struct vulkan_funcs * CDECL __wine_get_vulkan_driver( HDC hdc, UINT version );
+@@ -7311,11 +7311,11 @@ index d384a8a68c0..b16877ea2f0 100644
+-     X11DRV_SET_DRAWABLE,     /* set current drawable for a DC */
+-     X11DRV_START_EXPOSURES,  /* start graphics exposures */
+-     X11DRV_END_EXPOSURES,    /* end graphics exposures */
+--    X11DRV_FLUSH_GL_DRAWABLE, /* flush changes made to the gl drawable */
+-+    X11DRV_PRESENT_DRAWABLE, /* present the drawable on screen */
+-     X11DRV_FLUSH_GDI_DISPLAY /* flush the gdi display */
++     X11DRV_SET_DRAWABLE,     /* set current drawable for a DC */
++     X11DRV_START_EXPOSURES,  /* start graphics exposures */
++     X11DRV_END_EXPOSURES,    /* end graphics exposures */
++-    X11DRV_FLUSH_GL_DRAWABLE /* flush changes made to the gl drawable */
+++    X11DRV_PRESENT_DRAWABLE  /* present the drawable on screen */
+  };
+-
++ 
++ struct x11drv_escape_set_drawable
+ @@ -306,10 +306,10 @@ struct x11drv_escape_get_drawable
+      int                      pixel_format; /* internal GL pixel format */
+  };
