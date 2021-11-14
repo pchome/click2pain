@@ -440,6 +440,9 @@ src_prepare() {
 	eapply "${FILESDIR}/WINEMODPATH-5.9.patch"
 	eapply "${FILESDIR}/recreate-dxvk-winelib.patch"
 
+	# FSR fix for ultrawide 1080p
+	eapply "${FILESDIR}/FSR-ultrawide-1080p-resolutions.patch"
+
 	# Quick and dirty HACK to pretend we have 8 cores minimum
 	# Require more work to properly fix, but enough for
 	# games which only read this value to say goodbye
