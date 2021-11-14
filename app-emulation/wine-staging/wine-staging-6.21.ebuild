@@ -32,8 +32,10 @@ STAGING_P="wine-staging-${MY_PV}"
 STAGING_DIR="${WORKDIR}/${STAGING_P}"
 GWP_V="20210925"
 PATCHDIR="${WORKDIR}/gentoo-wine-patches"
-GE_COMMIT=d83b266ef51a4dd5d40207d744c15a9f74359e36
-GE_P="proton-ge-custom-${GE_COMMIT}"
+#GE_COMMIT=d83b266ef51a4dd5d40207d744c15a9f74359e36
+#GE_P="proton-ge-custom-${GE_COMMIT}"
+GE_PV="${MY_PV}-GE-1"
+GE_P="proton-ge-custom-${GE_PV}"
 GE_DIR="${WORKDIR}/${GE_P}"
 
 DESCRIPTION="Free implementation of Windows(tm) on Unix, with Wine-Staging patchset"
@@ -50,7 +52,8 @@ else
 fi
 
 SRC_URI="${SRC_URI}
-	proton? ( https://github.com/GloriousEggroll/proton-ge-custom/archive/${GE_COMMIT}.zip -> ${GE_P}.zip )"
+	proton? ( https://github.com/GloriousEggroll/proton-ge-custom/archive/${GE_PV}.tar.gz -> ${GE_P}.tar.gz )"
+#	proton? ( https://github.com/GloriousEggroll/proton-ge-custom/archive/${GE_COMMIT}.zip -> ${GE_P}.zip )"
 
 LICENSE="LGPL-2.1"
 SLOT="${MY_PV}"
