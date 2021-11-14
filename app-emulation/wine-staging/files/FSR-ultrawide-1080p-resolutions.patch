@@ -1,5 +1,5 @@
---- fs.c.orig	2021-11-14 11:47:32.618387101 +0200
-+++ fs.c	2021-11-14 12:06:24.825492529 +0200
+--- a/dlls/winex11.drv/fs.c
++++ b/dlls/winex11.drv/fs.c
 @@ -86,12 +86,16 @@ static struct fs_monitor_size fs_monitor
      {1920, 1280}, /*  3:2 */
      {1920, 800},  /* 12:5 */
